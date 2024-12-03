@@ -18,19 +18,29 @@ def translate_file(read, write):
             for variable in variables:
                 vars.append(variable)
 
-    #For testing, delete in final draft
-    print(vars)
-
+    #Algorithm for extracting variable values
     for line in lines:
         if "=" in line:
             lhs, rhs = line.split("=")
-            if lhs.strip() in vars:                                     #If line is in form of var = ...          
-                pass
-                #TODO: implement, print statements are for debugging
-                # print(line)
-                # print(lhs.strip())
-                # print(rhs.strip())
-
+            if lhs.strip() in vars:                                    #If line is in form of var = ...  
+                for var in vars:                                       #Var found on RHS
+                    if re.search(r'\b' + re.escape(var) + r'\b', rhs):
+                        for key, value in varval.items():
+                            rhs = re.sub(r'\b' + re.escape(key.strip()) + r'\b', value, rhs) #Only replace the whole variable, not partial matches (ie, a in b2a)
+                        rhs = rhs.strip().rstrip(';')
+                        try:
+                            result = eval(rhs)                         #Evaluate the modified expression to calculate the result
+                            varval[lhs.strip()] = result
+                        except Exception as e:
+                            print(f"Error evaluating expression: {e}")
+                        break                                          #Break the loop once a variable is found to prevent running multiple times in one line
+                    else:
+                        try:                                
+                            target = r'(\d+)\s+;'
+                            value = re.findall(target, rhs)
+                            varval[lhs.strip()] = value[0]
+                        except Exception as e:
+                            print(f"Error doing simple assignment: {e}")
 
     try:                                                                #Write correct lines into new file(write)
         if os.path.exists(write):
