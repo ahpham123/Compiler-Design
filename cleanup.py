@@ -37,29 +37,6 @@ def clean_file(read, write):                                           #Read lin
             continue
         res[i] = re.sub(r'(?<!\s);', ' ;', line)                        # Add space before semicolons
 
-    #Algorithim to collect variable names
-    varflag = False
-    vars = []
-    for line in res:
-        if line.lower() == "var\n":
-            varflag = True
-            continue
-        if varflag:
-            if line.lower() == "begin":
-                varflag = False
-            if varflag:
-                variables = re.findall(r'(\w+)(?=\s*,|\s*:)', line)     #Look for all raw strings with patterns of words (\w+) and look ahead (?=\s*,|\s*:) for commas or colons in line and make it into a list
-                for variable in variables:
-                    vars.append(variable)
-
-    #For testing, delete in final draft
-    print(vars)
-
-    #TODO: IMPLEMENT ALGORITHIM TO CORRECTLY USE VARS LIST OF VARIABLES
-    #CORRECT LINE IS bba = ( b2a + 2 * c) * a ;
-    #CURRENT LINE IS bba = a1 * ( b2a + 2 * c) ;
-
-
     try:                                                                #Write correct lines into new file(write)
         if os.path.exists(write):
             with open(write, "w", encoding='utf-8') as file:            #If file already exists, wipe it before writing the editted version

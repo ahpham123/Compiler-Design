@@ -11,7 +11,7 @@ begin
    print ( c );  (* display c *)
 
         (* compute the value of the expression *)
-        bba = a1 * ( b2a + 2 * c)          ;
-        print ( “value=”,          bba   ) ;  (* print the value of bba*)
+        bba = ( b2a + 2 * c) * a          ;
+        print ( “Value=”,          bba   ) ;  (* print the value of bba*)
 
   end
