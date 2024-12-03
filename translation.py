@@ -2,13 +2,12 @@ import re
 import os
 #TODO: Store variable type (ie. Integer)
 def translate_file(read, write):
-    varval = {}                                                         #Dict to store variable and their respective value
     with open(read, 'r', encoding='utf-8') as file:
         lines = file.readlines()
-    varflag = False
-    vars = []                                                           #List to find variables in their declaration
     
     #Algorithm to extract variable names from variable declaration
+    varflag = False
+    vars = []                                                           #List to find variables in their declaration
     for line in lines:
         if line.lower() == "var\n":
             varflag = True
@@ -19,6 +18,7 @@ def translate_file(read, write):
                 vars.append(variable)
 
     #Algorithm for extracting variable values
+    varval = {}                                                        #Dict to store variable and their respective value
     for line in lines:
         if "=" in line:
             lhs, rhs = line.split("=")
@@ -41,14 +41,14 @@ def translate_file(read, write):
                             varval[lhs.strip()] = value[0]
                         except Exception as e:
                             print(f"Error doing simple assignment: {e}")
-
+    
+    
     try:                                                                #Write correct lines into new file(write)
         if os.path.exists(write):
             with open(write, "w", encoding='utf-8') as file:            #If file already exists, wipe it before writing the editted version
                 pass
         with open(write, "a+", encoding='utf-8') as file:               #Begin writing editted file, if file doesnt exist "a+" will make a newfile
-            for line in vars:
-                file.writelines(line)
+            pass
     except Exception as e:
         print(f"An error has occured: {e}")
 
