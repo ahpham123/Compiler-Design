@@ -48,4 +48,4 @@ def clean_file(read, write):                                           #Read lin
         print(f"An error has occured: {e}")
 
 #EXAMPLE USAGE, reading from final.txt and writing into empty.txt
-clean_file("final.txt", "empty.txt")
+clean_file("final.txt", "cleanup.txt")
