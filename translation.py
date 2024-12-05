@@ -36,7 +36,6 @@ def translate_file(read, write):
         lhs, rhs = line.split("=")
         if not lhs.strip() in vars:                                    #If line is in form of var = ...  
             continue
-        #TODO: Modify conditional to work with dict
         for var in vars:
             if re.search(r'\b' + re.escape(var) + r'\b', rhs):         #Var found in rhs
                 for key, value in varval.items():
@@ -57,7 +56,9 @@ def translate_file(read, write):
                     print(f"Error doing simple assignment: {e}")
 
     #For testing, delete in final draft
+    print("Varval: ")
     print(varval)
+    print("Vars: ")
     print(vars)
 
 
@@ -71,7 +72,7 @@ def translate_file(read, write):
     for line in lines:
         lineappend = ""
 
-        if line == "end":                                             #Reach end
+        if line == "end":                                               #Reach end
             translated_lines.append("\tsystem (“pause”);\n\treturn 0;\n}")
             break
 
@@ -90,10 +91,21 @@ def translate_file(read, write):
             lineappend += "\t"
             if "print" in line:
                 lineappend += "cout<< "
-                #Insert re statement to capture between
-                print(line)
-                value = re.search(r"print\s*\(\s*(.*?)\s*\)\s*;",line)
-                print(value.group(1))
+                value = re.search(r"print\s*\(\s*(.*?)\s*\)\s*;",line) #Extracts the contents inside print statements
+                printcontent = value.group(1).strip()                  #Formats value into a string
+                for var in vars:
+                    if re.search(r'\b' + re.escape(var) + r'\b', line):                            #For each variable, check if it is in print statement
+                        printcontent = re.sub(r'\b' + re.escape(var) + r'\b', str(varval[var]), printcontent) #Replace all instances of variables found in print statements with the value
+                        printcontent = re.sub(r'[“”"]([^“”"]*)["”"]', r'\1', printcontent) #Remove curly quotes
+                        output = printcontent
+                        print(output)
+                        stringsplit = printcontent.split(",")
+                        for string in stringsplit:
+                            #lineappend += "“" + string + "” << "
+                            pass
+                        pass
+
+
 
     #For debugging
     # for line in translated_lines:
