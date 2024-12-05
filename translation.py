@@ -62,18 +62,20 @@ def translate_file(read, write):
 
 
     translated_lines = []
-    translated_lines.append("#include <iostream>\n")
-    translated_lines.append("using namespace std;\n")
-    translated_lines.append("int main()\n")
-    translated_lines.append("{\n")
+    translated_lines.append("#include <iostream>")
+    translated_lines.append("using namespace std;")
+    translated_lines.append("int main()")
+    translated_lines.append("{")
     #Algorithm to begin translating txt lines to code
+    beginflag = False
     for line in lines:
+        lineappend = ""
+
         if line == "end":                                             #Reach end
             translated_lines.append("\tsystem (“pause”);\n\treturn 0;\n}")
             break
+
         if line == "var\n":                                             #Entering variable delcaration section
-            #TODO:
-            lineappend = ""
             lineappend += "\t" + vartype + " "
             for index, var in enumerate(vars):
                 if index == len(vars) - 1:
@@ -81,9 +83,22 @@ def translate_file(read, write):
                 else:
                     lineappend += var + ", "
             translated_lines.append(lineappend)
-    #for debugging
-    for line in translated_lines:
-        print(line)
+
+        if line == "begin\n":
+            beginflag = True
+        if beginflag:
+            lineappend += "\t"
+            if "print" in line:
+                lineappend += "cout<< "
+                #Insert re statement to capture between
+                print(line)
+                value = re.search(r"print\s*\(\s*(.*?)\s*\)\s*;",line)
+                print(value.group(1))
+
+    #For debugging
+    # for line in translated_lines:
+    #     print(line)
+
     try:                                                                #Write correct lines into new file(write)
         if os.path.exists(write):
             with open(write, "w", encoding='utf-8') as file:            #If file already exists, wipe it before writing the editted version
