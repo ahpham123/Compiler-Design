@@ -5,8 +5,10 @@ def translate_file(read, write):
     with open(read, 'r', encoding='utf-8') as file:
         lines = file.readlines()
     
+    #TODO: Modify algorithm to use a dict and store type aswell as name
     #Algorithm to extract variable names from variable declaration
     varflag = False
+    typesect = False
     vars = []                                                          #List to find variables in their declaration
     for line in lines:
         if line.lower() == "var\n":
@@ -15,10 +17,16 @@ def translate_file(read, write):
         if varflag:
             try:
                 variables = re.findall(r'(\w+)(?=\s*,|\s*:)', line)
+                vartype = re.search(r':\s*(.*?)\s*;', line)             #Extract variable type found after : before ;
+                if typesect:
+                    print(vartype.group(1).strip())                         #Formats vartype to be readable
                 for variable in variables:
+                    #TODO:Modify to add into dict with format Varname : Vartype, probably move this loop up to if typesect
                     vars.append(variable)
             except Exception as e:
                 print(f"An error has occured: {e}")
+
+    
     #Algorithm for extracting variable values
     varval = {}                                                        #Dict to store variable and their respective value
     for line in lines:
@@ -28,7 +36,7 @@ def translate_file(read, write):
         lhs, rhs = line.split("=")
         if not lhs.strip() in vars:                                    #If line is in form of var = ...  
             continue
-
+        #TODO: Modify conditional to work with dict
         for var in vars:
             if re.search(r'\b' + re.escape(var) + r'\b', rhs):         #Var found in rhs
                 for key, value in varval.items():
@@ -50,6 +58,16 @@ def translate_file(read, write):
 
     #For testing, delete in final draft
     print(varval)
+
+
+    translated_lines = []
+    translated_lines.append("#include <iostream>\n")
+    translated_lines.append("using namespace std;\n")
+    #Algorithm to begin translating txt lines to code
+    for line in lines:
+        if line == "var\n":                                             #Entering variable delcaration section
+            #TODO:
+            pass
 
     try:                                                                #Write correct lines into new file(write)
         if os.path.exists(write):
