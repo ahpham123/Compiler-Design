@@ -2,7 +2,7 @@
 using namespace std; 
 int main() 
 { 
-      int a , b2a , c , bba ;   
+      int a , b2a , c , bba;   
       a = 3; 
       b2a = 14;     
       c = 5; 

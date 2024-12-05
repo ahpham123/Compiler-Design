@@ -8,20 +8,20 @@ def translate_file(read, write):
     #TODO: Modify algorithm to use a dict and store type aswell as name
     #Algorithm to extract variable names from variable declaration
     varflag = False
-    typesect = False
     vars = []                                                          #List to find variables in their declaration
     for line in lines:
-        if line.lower() == "var\n":
+        if line.lower() == "var\n":                                    #Entering variable declaration
             varflag = True
             continue
+        if line.lower() == "begin\n":                                  #Exitting variable declaration
+            varflag = False
+            break
         if varflag:
             try:
                 variables = re.findall(r'(\w+)(?=\s*,|\s*:)', line)
-                vartype = re.search(r':\s*(.*?)\s*;', line)             #Extract variable type found after : before ;
-                if typesect:
-                    print(vartype.group(1).strip())                         #Formats vartype to be readable
+                match = re.search(r':\s*(.*?)\s*;', line)             #Extract variable type found after : before ;
+                vartype = match.group(1).strip()
                 for variable in variables:
-                    #TODO:Modify to add into dict with format Varname : Vartype, probably move this loop up to if typesect
                     vars.append(variable)
             except Exception as e:
                 print(f"An error has occured: {e}")
@@ -58,17 +58,32 @@ def translate_file(read, write):
 
     #For testing, delete in final draft
     print(varval)
+    print(vars)
 
 
     translated_lines = []
     translated_lines.append("#include <iostream>\n")
     translated_lines.append("using namespace std;\n")
+    translated_lines.append("int main()\n")
+    translated_lines.append("{\n")
     #Algorithm to begin translating txt lines to code
     for line in lines:
+        if line == "end":                                             #Reach end
+            translated_lines.append("\tsystem (“pause”);\n\treturn 0;\n}")
+            break
         if line == "var\n":                                             #Entering variable delcaration section
             #TODO:
-            pass
-
+            lineappend = ""
+            lineappend += "\t" + vartype + " "
+            for index, var in enumerate(vars):
+                if index == len(vars) - 1:
+                    lineappend += var + ";"
+                else:
+                    lineappend += var + ", "
+            translated_lines.append(lineappend)
+    #for debugging
+    for line in translated_lines:
+        print(line)
     try:                                                                #Write correct lines into new file(write)
         if os.path.exists(write):
             with open(write, "w", encoding='utf-8') as file:            #If file already exists, wipe it before writing the editted version
