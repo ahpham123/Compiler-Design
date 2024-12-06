@@ -1,17 +1,18 @@
-#include <string>
-#include <unordered_map>
-#include <vector>
 #include <iostream>
+#include <vector>
+#include <string>
+#include <regex>
+#include <unordered_map>
 #include <stack>
 #include <sstream>
 
 std::vector<std::pair<std::string, std::string>> R;
-std::unordered_map<int, std::unordered_map<std::string, std::string>> LRPT;           // LR Parsing Table from h8
+std::unordered_map<int, std::unordered_map<std::string, std::string>> LRPT;
 
-void Rules() {
+void Rules() {   // use the same method to build table in h8
     R = {
         {"<prog>", "program <identifier>; var <dec-list> begin <stat-list> end"},
-        {"<identifier>", "<letter> {<letter> | <digit>}"},
+        {"<identifier>", "<letter-or-digit> {<letter-or-digit>}"},
         {"<dec-list>", "<dec>:<type>;"},
         {"<dec>", "<identifier>,<dec>"},
         {"<dec>", "<identifier>"},
@@ -38,12 +39,12 @@ void Rules() {
         {"<sign>", "-"},
         {"<sign>", "λ"},
         {"<digit>", "0|1|2|3|4|5|6|7|8|9"},
-        {"<letter>", "a|b|c|d|l|f"}
+        {"<letter-or-digit>", "a|b|c|d|l|f|0|1|2|3|4|5|6|7|8|9"}
     };
 }
 
-void Table() {
-    LRPT = { // the table for whole grammars
+void Table() { //parsing table 
+    LRPT = {
         {0, {{"program", "S1"}, {"<identifier>", "2"}, {"<dec-list>", "3"}, {"var", "S4"}, {"begin", "S5"}, {"<stat-list>", "6"}, {"end", "ACC"}}},
         {1, {{";", "S7"}}},
         {2, {{";", "R2"}, {",", "R2"}, {":", "R2"}}},
@@ -81,102 +82,165 @@ void Table() {
     };
 }
 
-bool program(const std::string& keyword) { // detect different function
-    return keyword == "program" || keyword == "var" || keyword == "begin" || keyword == "end" || keyword == "integer" || keyword == "print";
+bool program(const std::string& keyword) {
+    return keyword == "program" || keyword == "var" || keyword == "begin" || 
+           keyword == "end" || keyword == "integer" || keyword == "print";
 }
 
 bool parse_input(const std::vector<std::string>& inputs) {
-    std::stack<int> stateStack;
-    std::stack<std::string> symbolStack;
-    stateStack.push(0);
-
     int index = 0;
-    bool error = false;
-    bool Detected = false;
 
-    while (index < inputs.size()) {
-        int State = stateStack.top();
-        std::string a = inputs[index];
+    if (index < inputs.size() && inputs[index] == "program") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\nprogram is expected." << std::endl;
+        return false;
+    }
 
-        if (LRPT[State].find(a) != LRPT[State].end()) {
-            std::string action = LRPT[State][a];
+    if (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z0-9]+"))) {
+        index++;
+    } else {
+        std::cout << "This is the list of error\nUnknown identifier." << std::endl;
+        return false;
+    }
 
-            if (action[0] == 'S') {
-                stateStack.push(stoi(action.substr(1)));
-                symbolStack.push(a);
+    if (index < inputs.size() && inputs[index] == ";") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\n; semicolon is missing." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && inputs[index] == "var") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\nvar is expected." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z0-9]+"))) {
+        index++;
+    } else {
+        std::cout << "This is the list of error\nunknown identifier." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && inputs[index] == ":") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\n: colon is missing." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && inputs[index] == "integer") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\ninteger is expected." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && inputs[index] == ";") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\n; semicolon is missing." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && inputs[index] == "begin") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\nbegin is expected." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && inputs[index] == "print") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\nprint is expected." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && inputs[index] == "(") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\n( The left parentheses is missing." << std::endl;
+        return false;
+    }
+
+    bool expect = true; 
+    while (index < inputs.size() && inputs[index] != ")") {
+        if (expect) {
+            if (std::regex_match(inputs[index], std::regex(R"("value=,")")) || 
+                std::regex_match(inputs[index], std::regex(R"([0-9]+)"))) {
                 index++;
-            } else if (action[0] == 'R') {
-                int rule = stoi(action.substr(1)) - 1;
-                std::string head = R[rule].first;
-                std::string body = R[rule].second;
-                for (size_t i = 0; i < body.size(); i++) {
-                    stateStack.pop();
-                    symbolStack.pop();
-                }
-                symbolStack.push(head);
-                State = stateStack.top();
-                stateStack.push(stoi(LRPT[State][head]));
-            } else if (action == "ACC") {
-                std::cout << "Ready to compile" << std::endl;
-                return true;
+                expect = false; 
+            } else {
+                std::cout << "This is the list of error\nunknown identifier or value inside print." << std::endl;
+                return false;
             }
         } else {
-            if (a == "program" && !program(a)) {
-                std::cout << "This is the list of error\n" << std::endl;
-                std::cout << "program is expected." << std::endl;
-                error = true;
-            }
-            else if (a == "var" && !program(a)) {
-                std::cout << "This is the list of error\n" << std::endl;
-                std::cout << "var is expected." << std::endl;
-                error = true;
-            }
-            else if (a == "begin" && !program(a)) {
-                std::cout << "This is the list of error\n" << std::endl;
-                std::cout << "begin is expected." << std::endl;
-                error = true;
-            }
-            else if (a == "end" && !program(a)) {
-                std::cout << "This is the list of error\n" << std::endl;
-                std::cout << "end is expected." << std::endl;
-                error = true;
-            } else if (a == "integer" && !program(a)) {
-                std::cout << "This is the list of error\n" << std::endl;
-                std::cout << "integer is expected." << std::endl;
-                error  = true;
-            } else if (a == "print" && !program(a)) {
-                std::cout << "This is the list of error\n" << std::endl;
-                std::cout << "print is expected." << std::endl;
-                error = true;
-            } else {
-                std::cout << "This is the list of error\n" << std::endl;
-                std::cout << "Unexpected token: " << a << std::endl;
-                Detected = true;
-                break;
-            }
-        }
 
-        if (Detected) {
-            break;
+            if (inputs[index] == ",") {
+                index++;
+                expect = true;
+            } else {
+                std::cout << "This is the list of error\ncomma is missing." << std::endl;
+                return false;
+            }
         }
     }
 
-    return !Detected;
+    if (index < inputs.size() && inputs[index] == ")") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\n) The right parentheses is missing." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && inputs[index] == ";") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\n; semicolon is missing." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && inputs[index] == "end") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\nend is expected." << std::endl;
+        return false;
+    }
+
+    if (index < inputs.size() && inputs[index] == ".") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\n. period is missing." << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
-
- int main() {
-    Rules();
-    Table();
-
+int main() {
     std::string input;
-    std::cout << "Enter program: ";
+    std::cout << "Enter program: \n";
     getline(std::cin, input);
-    std::stringstream ss(input);
     std::vector<std::string> tokens;
-    std::string token;
-    while (ss >> token) {
-        tokens.push_back(token);
+    std::regex regex(R"((\w+|[;,:=+*/()\.""]))");
+    std::smatch match;
+    while (std::regex_search(input, match, regex)) {
+        tokens.push_back(match.str());
+        input = match.suffix().str();
+    }
+    if (parse_input(tokens)) {
+        std::cout << "Ready to compile\n";
+    } else {
+        std::cout << "\n";
+    }
+
+    return 0;
+}
+
     }
 
     parse_input(tokens);
