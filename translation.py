@@ -95,15 +95,26 @@ def translate_file(read, write):
                 printcontent = value.group(1).strip()                  #Formats value into a string
                 for var in vars:
                     if re.search(r'\b' + re.escape(var) + r'\b', line):                            #For each variable, check if it is in print statement
-                        printcontent = re.sub(r'\b' + re.escape(var) + r'\b', str(varval[var]), printcontent) #Replace all instances of variables found in print statements with the value
-                        printcontent = re.sub(r'[“”"]([^“”"]*)["”"]', r'\1', printcontent) #Remove curly quotes
-                        output = printcontent
-                        print(output)
+                        print("Printcontent: ")
+                        print(printcontent)
                         stringsplit = printcontent.split(",")
+                        print(stringsplit)
                         for string in stringsplit:
-                            #lineappend += "“" + string + "” << "
-                            pass
+                            if re.search(r'\b' + re.escape(var) + r'\b', string):
+                                lineappend += string + " <<"
+                            else:
+                                lineappend += "“" + string + "” << "
+                        print(lineappend)
                         pass
+                        #printcontent = re.sub(r'\b' + re.escape(var) + r'\b', str(varval[var]), printcontent) #Replace all instances of variables found in print statements with the value
+                        #printcontent = re.sub(r'[“”"]([^“”"]*)["”"]', r'\1', printcontent) #Remove curly quotes
+                        #output = printcontent
+
+                        # if "," in output:                               #Outputs print statements
+                        #     output = output.replace(",", "")
+                        # if " " in output:
+                        #     output = output.replace(" ", "")
+                        # #print("\t" + output.strip())
 
 
 
