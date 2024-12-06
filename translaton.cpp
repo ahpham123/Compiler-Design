@@ -8,7 +8,6 @@ int main()
 	c = 5;
 	cout<< c << endl;
 	bba = ( b2a + 2 * c) * a;
-	cout<< “Value=”  << bba << endl;
-	system (“pause”);
+	cout<< "Value="  << bba << endl;
 	return 0;
 }
