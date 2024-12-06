@@ -1,5 +1,6 @@
 import re
 import os
+
 def clean_file(read, write):                                           #Read lines from input file(read) and store into list lines
     try:
         with open(read, 'r', encoding='utf-8') as file:

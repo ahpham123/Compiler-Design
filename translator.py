@@ -121,4 +121,4 @@ def translate_file(read, write):
         print(f"An error has occured: {e}")
 
 #Sample usage
-translate_file("cleanup.txt", "translaton.cpp")
+translate_file("cleanup.txt", "translation.cpp")
