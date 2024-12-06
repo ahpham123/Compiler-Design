@@ -1,11 +1,9 @@
 import re
 import os
-#TODO: Store variable type (ie. Integer)
 def translate_file(read, write):
     with open(read, 'r', encoding='utf-8') as file:
         lines = file.readlines()
     
-    #TODO: Modify algorithm to use a dict and store type aswell as name
     #Algorithm to extract variable names from variable declaration
     varflag = False
     vars = []                                                           #List to find variables in their declaration
@@ -59,13 +57,6 @@ def translate_file(read, write):
                 except Exception as e:
                     print(f"Error doing simple assignment: {e}")
 
-    #For testing, delete in final draft
-    # print("Varval: ")
-    # print(varval)
-    # print("Vars: ")
-    # print(vars)
-
-
     translated_lines = []
     translated_lines.append("#include <iostream>\n")
     translated_lines.append("using namespace std;\n")
@@ -107,7 +98,6 @@ def translate_file(read, write):
                     if re.search(r'\b' + re.escape(var) + r'\b', line):#For each variable, check if it is in print statement
                         stringsplit = printcontent.split(",")
                         for string in stringsplit:
-                            #if re.search(r'\b' + re.escape(var) + r'\b', string):
                             lineappend += string + " <<"
                 lineappend += " endl;\n"
                 translated_lines.append(lineappend)
@@ -126,13 +116,9 @@ def translate_file(read, write):
                 pass
         with open(write, "a+", encoding='utf-8') as file:               #Begin writing editted file, if file doesnt exist "a+" will make a newfile
             for line in translated_lines:
-                #line += "\n"
                 file.write(line)
     except Exception as e:
         print(f"An error has occured: {e}")
 
-
+#Sample usage
 translate_file("cleanup.txt", "translaton.cpp")
-#  Output: 
-#       5 
-#       Value=72 
