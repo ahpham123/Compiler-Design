@@ -1,0 +1,10 @@
+#include <iostream>
+using namespace std;
+int main()
+{
+	integer a, b2a, c, bba;
+	cout<< c << endl;
+	cout<< ““Value=” ” << bba << endl;
+	system (“pause”);
+	return 0;
+}

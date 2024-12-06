@@ -56,10 +56,10 @@ def translate_file(read, write):
                     print(f"Error doing simple assignment: {e}")
 
     #For testing, delete in final draft
-    print("Varval: ")
-    print(varval)
-    print("Vars: ")
-    print(vars)
+    # print("Varval: ")
+    # print(varval)
+    # print("Vars: ")
+    # print(vars)
 
 
     translated_lines = []
@@ -95,17 +95,16 @@ def translate_file(read, write):
                 printcontent = value.group(1).strip()                  #Formats value into a string
                 for var in vars:
                     if re.search(r'\b' + re.escape(var) + r'\b', line):                            #For each variable, check if it is in print statement
-                        print("Printcontent: ")
-                        print(printcontent)
                         stringsplit = printcontent.split(",")
-                        print(stringsplit)
                         for string in stringsplit:
                             if re.search(r'\b' + re.escape(var) + r'\b', string):
                                 lineappend += string + " <<"
                             else:
-                                lineappend += "“" + string + "” << "
-                        print(lineappend)
-                        pass
+                                lineappend += "“" + string + "” <<"
+                lineappend += " endl;"
+                translated_lines.append(lineappend)
+    for line in translated_lines:
+        print(line)
                         #printcontent = re.sub(r'\b' + re.escape(var) + r'\b', str(varval[var]), printcontent) #Replace all instances of variables found in print statements with the value
                         #printcontent = re.sub(r'[“”"]([^“”"]*)["”"]', r'\1', printcontent) #Remove curly quotes
                         #output = printcontent
@@ -127,7 +126,9 @@ def translate_file(read, write):
             with open(write, "w", encoding='utf-8') as file:            #If file already exists, wipe it before writing the editted version
                 pass
         with open(write, "a+", encoding='utf-8') as file:               #Begin writing editted file, if file doesnt exist "a+" will make a newfile
-            pass
+            for line in translated_lines:
+                line += "\n"
+                file.write(line)
     except Exception as e:
         print(f"An error has occured: {e}")
 
