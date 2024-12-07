@@ -3,9 +3,6 @@
 #include <string>
 #include <regex>
 #include <unordered_map>
-#include <stack>
-#include <sstream>
-
 std::vector<std::pair<std::string, std::string>> R;
 std::unordered_map<int, std::unordered_map<std::string, std::string>> LRPT;
 
@@ -43,7 +40,7 @@ void Rules() {   // use the same method to build table in h8
     };
 }
 
-void Table() { //parsing table 
+void Table() { //LRP table learned from h8
     LRPT = {
         {0, {{"program", "S1"}, {"<identifier>", "2"}, {"<dec-list>", "3"}, {"var", "S4"}, {"begin", "S5"}, {"<stat-list>", "6"}, {"end", "ACC"}}},
         {1, {{";", "S7"}}},
@@ -82,25 +79,25 @@ void Table() { //parsing table
     };
 }
 
-bool program(const std::string& keyword) {
+bool program(const std::string& keyword) { // The words need to be detect
     return keyword == "program" || keyword == "var" || keyword == "begin" || 
            keyword == "end" || keyword == "integer" || keyword == "print";
 }
 
-bool parse_input(const std::vector<std::string>& inputs) {
+bool parse_input(const std::vector<std::string>& inputs) { // use bool for error detect
     int index = 0;
 
-    if (index < inputs.size() && inputs[index] == "program") {
+    if (index < inputs.size() && inputs[index] == "program") { // if not match return to the the error message and get out
         index++;
     } else {
         std::cout << "This is the list of error\nprogram is expected." << std::endl;
         return false;
     }
 
-    if (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z0-9]+"))) {
+    if (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z0-9]+"))) { // std::regex("[a-zA-Z0-9]+" this get directly from Quora
         index++;
     } else {
-        std::cout << "This is the list of error\nUnknown identifier." << std::endl;
+        std::cout << "This is the list of error\nUnknown identifier." << std::endl; // use the same structure for all error message get from CPSC 131
         return false;
     }
 
@@ -166,28 +163,20 @@ bool parse_input(const std::vector<std::string>& inputs) {
         std::cout << "This is the list of error\n( The left parentheses is missing." << std::endl;
         return false;
     }
-
-    bool expect = true; 
-    while (index < inputs.size() && inputs[index] != ")") {
-        if (expect) {
-            if (std::regex_match(inputs[index], std::regex(R"("value=,")")) || 
-                std::regex_match(inputs[index], std::regex(R"([0-9]+)"))) {
+     if (index < inputs.size() && inputs[index] == "\"value=\"") {
+        index++;
+    } else {
+        std::cout << "This is the list of error\n\"value=\" is expected." << std::endl;
+        return false;
+    }
+    if (inputs[index] == ",") {
                 index++;
-                expect = false; 
-            } else {
-                std::cout << "This is the list of error\nunknown identifier or value inside print." << std::endl;
-                return false;
-            }
-        } else {
-
-            if (inputs[index] == ",") {
-                index++;
-                expect = true;
-            } else {
+    } else {
                 std::cout << "This is the list of error\ncomma is missing." << std::endl;
                 return false;
             }
-        }
+    if (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z0-9]+"))){ // Suggestion from Quora, get the reference from google Ai and cpp reference
+        index++;
     }
 
     if (index < inputs.size() && inputs[index] == ")") {
@@ -226,9 +215,10 @@ int main() {
     std::cout << "Enter program: \n";
     getline(std::cin, input);
     std::vector<std::string> tokens;
-    std::regex regex(R"((\w+|[;,:=+*/()\.""]))");
+    std::regex regex(R"((\".*?\"|\w+|[;,:=+*/().]))"); // this is the easiest way to get through this and also from website
+    // the sequence matter the output of error message
     std::smatch match;
-    while (std::regex_search(input, match, regex)) {
+    while (std::regex_search(input, match, regex)) {  // Get from regex Algorithms
         tokens.push_back(match.str());
         input = match.suffix().str();
     }
@@ -240,8 +230,6 @@ int main() {
 
     return 0;
 }
-
-    }
 
     parse_input(tokens);
     return 0;
