@@ -3,8 +3,10 @@
 #include <string>
 #include <regex>
 #include <unordered_map>
+#include <unordered_set>
 std::vector<std::pair<std::string, std::string>> R;
 std::unordered_map<int, std::unordered_map<std::string, std::string>> LRPT;
+std::unordered_set<std::string> variables;
 
 void Rules() {   // use the same method to build table in h8
     R = {
@@ -84,153 +86,184 @@ bool program(const std::string& keyword) { // The words need to be detect
            keyword == "end" || keyword == "integer" || keyword == "print";
 }
 
-bool parse_input(const std::vector<std::string>& inputs) { // use bool for error detect
-    int index = 0;
+bool parse_input(const std::vector<std::string>& inputs) {  // this structure come from cpsc 131
+    int index = 0;  // use index for get through the input
 
-    if (index < inputs.size() && inputs[index] == "program") { // if not match return to the the error message and get out
+    if (index < inputs.size() && inputs[index] == "program") { // All words and symbols need to have error message if do not match
         index++;
     } else {
-        std::cout << "This is the list of error\nprogram is expected." << std::endl;
+        std::cout << "program is expected." << std::endl;
         return false;
     }
 
-    if (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z0-9]+"))) { // std::regex("[a-zA-Z0-9]+" this get directly from Quora
+    if (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z][a-zA-Z0-9]*"))) { // the method to detect the digits and letters
+    // get from Quora and cpp reference of regex 
         index++;
     } else {
-        std::cout << "This is the list of error\nUnknown identifier." << std::endl; // use the same structure for all error message get from CPSC 131
+        std::cout << "Unknown identifier." << std::endl;
         return false;
     }
 
     if (index < inputs.size() && inputs[index] == ";") {
         index++;
     } else {
-        std::cout << "This is the list of error\n; semicolon is missing." << std::endl;
+        std::cout << "; semicolon is missing." << std::endl;
         return false;
     }
-
     if (index < inputs.size() && inputs[index] == "var") {
         index++;
     } else {
-        std::cout << "This is the list of error\nvar is expected." << std::endl;
+        std::cout << "var is expected." << std::endl;
         return false;
     }
 
-    if (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z0-9]+"))) {
-        index++;
-    } else {
-        std::cout << "This is the list of error\nunknown identifier." << std::endl;
-        return false;
+ while (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z][a-zA-Z0-9]*"))) {
+    variables.insert(inputs[index]);  // while loops for variables 
+    index++;
+
+    if (index < inputs.size()) {
+        if (inputs[index] == ",") {
+            index++;
+        } else if (std::regex_match(inputs[index], std::regex("[a-zA-Z][a-zA-Z0-9]*"))) {
+            std::cout << ", comma is missing." << std::endl;
+            return false;
+        }
     }
+}
+
 
     if (index < inputs.size() && inputs[index] == ":") {
         index++;
     } else {
-        std::cout << "This is the list of error\n: colon is missing." << std::endl;
+        std::cout << ": colon is missing." << std::endl;
         return false;
     }
 
     if (index < inputs.size() && inputs[index] == "integer") {
         index++;
     } else {
-        std::cout << "This is the list of error\ninteger is expected." << std::endl;
+        std::cout << "integer is expected." << std::endl;
         return false;
     }
 
     if (index < inputs.size() && inputs[index] == ";") {
         index++;
     } else {
-        std::cout << "This is the list of error\n; semicolon is missing." << std::endl;
+        std::cout << "; semicolon is missing." << std::endl;
         return false;
     }
 
     if (index < inputs.size() && inputs[index] == "begin") {
         index++;
     } else {
-        std::cout << "This is the list of error\nbegin is expected." << std::endl;
+        std::cout << "begin is expected." << std::endl;
         return false;
     }
 
-    if (index < inputs.size() && inputs[index] == "print") {
-        index++;
-    } else {
-        std::cout << "This is the list of error\nprint is expected." << std::endl;
-        return false;
-    }
-
-    if (index < inputs.size() && inputs[index] == "(") {
-        index++;
-    } else {
-        std::cout << "This is the list of error\n( The left parentheses is missing." << std::endl;
-        return false;
-    }
-     if (index < inputs.size() && inputs[index] == "\"value=\"") {
-        index++;
-    } else {
-        std::cout << "This is the list of error\n\"value=\" is expected." << std::endl;
-        return false;
-    }
-    if (inputs[index] == ",") {
-                index++;
-    } else {
-                std::cout << "This is the list of error\ncomma is missing." << std::endl;
+    while (index < inputs.size() && inputs[index] != "end" ) {  // if not end just keep going on
+        if (std::regex_match(inputs[index], std::regex("[a-zA-Z][a-zA-Z0-9]*"))) {
+            if (variables.find(inputs[index]) == variables.end() && inputs[index] != "print") {
+                std::cout << "print is expected" << std::endl;
                 return false;
             }
-    if (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z0-9]+"))){ // Suggestion from Quora, get the reference from google Ai and cpp reference
-        index++;
-    }
+            index++;
 
-    if (index < inputs.size() && inputs[index] == ")") {
-        index++;
-    } else {
-        std::cout << "This is the list of error\n) The right parentheses is missing." << std::endl;
-        return false;
-    }
+            if (inputs[index - 1] == "print") {
+                if (index < inputs.size() && inputs[index] == "(") {
+                    index++;
+                } else {
+                    std::cout << "( left parentheses is missing." << std::endl;
+                    return false;
+                }
 
-    if (index < inputs.size() && inputs[index] == ";") {
-        index++;
-    } else {
-        std::cout << "This is the list of error\n; semicolon is missing." << std::endl;
-        return false;
+                bool has_string_or_variable = false;
+                if (index < inputs.size() && 
+                    (inputs[index][0] == '"' || variables.find(inputs[index]) != variables.end())) {
+                    has_string_or_variable = true;
+                    index++;
+                } else {
+                    std::cout << "Unknown identifier" << std::endl;
+                    return false;
+                }
+                while (index < inputs.size() && inputs[index] == ",") {
+                    index++;
+                    if (index < inputs.size() && 
+                        (inputs[index][0] == '"' || variables.find(inputs[index]) != variables.end())) {
+                        index++;
+                    } else {
+                        std::cout << "Unknown identifier" << std::endl;
+                        return false;
+                    }
+                }
+
+                if (index < inputs.size() && inputs[index] == ")") {
+                    index++;
+                } else {
+                    std::cout << ") right parentheses is missing." << std::endl;
+                    return false;
+                }
+
+                if (index < inputs.size() && inputs[index] == ";") {
+                    index++;
+                } else {
+                    std::cout << "; semicolon is missing." << std::endl;
+                    return false;
+                }
+            } else {
+                if (index < inputs.size() && inputs[index] == "=") {
+                    index++;
+                    while (index < inputs.size() && inputs[index] != ";") {
+                        index++;
+                    }
+
+                    if (index < inputs.size() && inputs[index] == ";") {
+                        index++;
+                    } else {
+                        std::cout << "; semicolon is missing." << std::endl;
+                        return false;
+                    }
+                }
+            }
+        } else {
+            std::cout << "Unknown identifier." << std::endl;
+            return false;
+        }
     }
 
     if (index < inputs.size() && inputs[index] == "end") {
         index++;
     } else {
-        std::cout << "This is the list of error\nend is expected." << std::endl;
+        std::cout << "end is expected." << std::endl;
         return false;
     }
 
     if (index < inputs.size() && inputs[index] == ".") {
         index++;
     } else {
-        std::cout << "This is the list of error\n. period is missing." << std::endl;
+        std::cout << ". period is missing." << std::endl;
         return false;
     }
 
     return true;
 }
 
+
 int main() {
     std::string input;
     std::cout << "Enter program: \n";
     getline(std::cin, input);
-    std::vector<std::string> tokens;
-    std::regex regex(R"((\".*?\"|\w+|[;,:=+*/().]))"); // this is the easiest way to get through this and also from website
-    // the sequence matter the output of error message
-    std::smatch match;
-    while (std::regex_search(input, match, regex)) {  // Get from regex Algorithms
-        tokens.push_back(match.str());
-        input = match.suffix().str();
+    std::vector<std::string> token;
+    std::regex regex(R"((\".*?\"|\w+|[;,:;=,+*/();.]))");
+     for (std::sregex_iterator j(input.begin(), input.end(), regex), endlp; j != endlp; ++j) {
+        token.push_back(j->str());  // sregex_iterator get suggestion from google ai, reference from GREEKS OR GREEKS
+        // use for matches for each 
     }
-    if (parse_input(tokens)) {
-        std::cout << "Ready to compile\n";
+
+    if (parse_input(token)) {
+        std::cout << "Ready to compile\n"; // after all checks ready for compile
     } else {
         std::cout << "\n";
     }
 
-    return 0;
-}
-
-    parse_input(tokens);
     return 0;
 }
