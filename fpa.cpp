@@ -89,7 +89,7 @@ bool program(const std::string& keyword) { // The words need to be detect
 bool parse_input(const std::vector<std::string>& inputs) {  // this structure come from cpsc 131
     int index = 0;  // use index for get through the input
 
-    if (index < inputs.size() && inputs[index] == "program") { // All words and symbols need to have error message if do not match
+    if (index < inputs.size() && inputs[index] == "program") { // All words and symbols need to have error message if do not match(structure learned from 121)
         index++;
     } else {
         std::cout << "program is expected." << std::endl;
@@ -118,7 +118,7 @@ bool parse_input(const std::vector<std::string>& inputs) {  // this structure co
     }
 
  while (index < inputs.size() && std::regex_match(inputs[index], std::regex("[a-zA-Z][a-zA-Z0-9]*"))) {
-    variables.insert(inputs[index]);  // while loops for variables 
+    variables.insert(inputs[index]); // take mutiple variab;es for one times use while and insert
     index++;
 
     if (index < inputs.size()) {
@@ -160,15 +160,11 @@ bool parse_input(const std::vector<std::string>& inputs) {  // this structure co
         return false;
     }
 
-    while (index < inputs.size() && inputs[index] != "end" ) {  // if not end just keep going on
-        if (std::regex_match(inputs[index], std::regex("[a-zA-Z][a-zA-Z0-9]*"))) {
-            if (variables.find(inputs[index]) == variables.end() && inputs[index] != "print") {
-                std::cout << "print is expected" << std::endl;
-                return false;
-            }
-            index++;
-
-            if (inputs[index - 1] == "print") {
+   while (index < inputs.size() && inputs[index] != "end") {
+    if (std::regex_match(inputs[index], std::regex("[a-zA-Z][a-zA-Z0-9]*"))) {
+        if (program(inputs[index])) {
+            if (inputs[index] == "print") {
+                index++;
                 if (index < inputs.size() && inputs[index] == "(") {
                     index++;
                 } else {
@@ -177,21 +173,22 @@ bool parse_input(const std::vector<std::string>& inputs) {  // this structure co
                 }
 
                 bool has_string_or_variable = false;
-                if (index < inputs.size() && 
-                    (inputs[index][0] == '"' || variables.find(inputs[index]) != variables.end())) {
+                if (index < inputs.size() &&
+                    (inputs[index][0] == '"' || variables.find(inputs[index]) != variables.end())) { // after "" gets the variables
                     has_string_or_variable = true;
                     index++;
                 } else {
-                    std::cout << "Unknown identifier" << std::endl;
+                    std::cout << "Unknown identifier." << std::endl;
                     return false;
                 }
+
                 while (index < inputs.size() && inputs[index] == ",") {
                     index++;
-                    if (index < inputs.size() && 
+                    if (index < inputs.size() &&
                         (inputs[index][0] == '"' || variables.find(inputs[index]) != variables.end())) {
                         index++;
                     } else {
-                        std::cout << "Unknown identifier" << std::endl;
+                        std::cout << "Unknown identifier." << std::endl;
                         return false;
                     }
                 }
@@ -210,25 +207,37 @@ bool parse_input(const std::vector<std::string>& inputs) {  // this structure co
                     return false;
                 }
             } else {
-                if (index < inputs.size() && inputs[index] == "=") {
-                    index++;
-                    while (index < inputs.size() && inputs[index] != ";") {
-                        index++;
-                    }
+                std::cout << "print is expected." << std::endl;
+                return false;
 
-                    if (index < inputs.size() && inputs[index] == ";") {
-                        index++;
-                    } else {
-                        std::cout << "; semicolon is missing." << std::endl;
-                        return false;
-                    }
+            }
+        } else if (variables.find(inputs[index]) != variables.end()) { 
+            index++;
+            if (index < inputs.size() && inputs[index] == "=") {
+                index++;
+                while (index < inputs.size() && inputs[index] != ";") {
+                    index++;
                 }
+                if (index < inputs.size() && inputs[index] == ";") {
+                    index++;
+                } else {
+                    std::cout << "; semicolon is missing." << std::endl;
+                    return false;
+                }
+            } else {
+                std::cout << "= equal is missing. (I am not sure but also unknown identifier if missing?)" << std::endl;
+                return false;
             }
         } else {
-            std::cout << "Unknown identifier." << std::endl;
+            std::cout << "end is expected" << std::endl;
             return false;
         }
+    } else {
+        std::cout << "Unknown identifier." << std::endl;
+        return false;
     }
+}
+
 
     if (index < inputs.size() && inputs[index] == "end") {
         index++;
@@ -250,17 +259,15 @@ bool parse_input(const std::vector<std::string>& inputs) {  // this structure co
 
 int main() {
     std::string input;
+     std::vector<std::string> tokens;
     std::cout << "Enter program: \n";
     getline(std::cin, input);
-    std::vector<std::string> token;
-    std::regex regex(R"((\".*?\"|\w+|[;,:;=,+*/();.]))");
-     for (std::sregex_iterator j(input.begin(), input.end(), regex), endlp; j != endlp; ++j) {
-        token.push_back(j->str());  // sregex_iterator get suggestion from google ai, reference from GREEKS OR GREEKS
-        // use for matches for each 
+    std::regex regex(R"((\".*?\"|\w+|[;,:;=,+*/();.]))"); // same as previous get from Quora
+     for (std::sregex_iterator j(input.begin(), input.end(), regex), end_it; j != end_it; ++j) {
+        tokens.push_back(j->str());  // sregex_iterator get suggestion from google
     }
-
-    if (parse_input(token)) {
-        std::cout << "Ready to compile\n"; // after all checks ready for compile
+    if (parse_input(tokens)) {
+        std::cout << "Ready to compile\n";
     } else {
         std::cout << "\n";
     }
